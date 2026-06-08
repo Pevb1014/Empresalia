@@ -10,6 +10,22 @@ from empleados.validators.validators import validar_texto_seguro, validar_nombre
 
 
 class Cargo(models.Model):
+    """
+    Representa un puesto de trabajo o rol específico dentro de un área de la empresa.
+
+    Cada cargo está vinculado obligatoriamente a un área y puede ser ocupado por múltiples empleados.
+
+    Atributos:
+        id (UUIDField): Identificador único universal (UUID) del cargo.
+        nombre (CharField): Nombre único del cargo (ej. "Desarrollador Backend").
+        descripcion (TextField): Detalle de las funciones y responsabilidades.
+        area (ForeignKey): Área corporativa a la que pertenece el cargo.
+
+    Comportamiento:
+        - Normaliza el nombre y la descripción antes de persistir los datos.
+        - Valida la integridad del modelo mediante full_clean() en cada guardado.
+        - Garantiza nombres únicos de cargo (ignorando mayúsculas/minúsculas).
+    """
 
     id = models.UUIDField(
         primary_key=True, 

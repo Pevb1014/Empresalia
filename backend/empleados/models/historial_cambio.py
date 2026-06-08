@@ -10,6 +10,25 @@ class TipoCambio(models.TextChoices):
 
 
 class HistorialCambio(models.Model):
+    """
+    Registro de auditoría para el seguimiento de modificaciones en los datos de empleados.
+
+    Permite reconstruir el estado histórico de la ficha de un empleado y cumplir
+    con requisitos de trazabilidad de la información sensible del personal.
+
+    Atributos:
+        id (UUIDField): Identificador único de la auditoría.
+        fecha_cambio (DateTimeField): Registro automático de cuándo ocurrió el evento.
+        empleado (ForeignKey): El empleado que fue objeto de la modificación.
+        tipo_cambio (CharField): Tipo de operación (CREACION o ACTUALIZACION).
+        campo_cambiado (CharField): Atributo específico que fue modificado.
+        valor_anterior (TextField): Valor previo al cambio (vacío en creaciones).
+        valor_nuevo (TextField): Valor asignado tras la modificación.
+
+    Comportamiento:
+        - Todos los campos están marcados como ineditables (editable=False).
+        - Ordenamiento cronológico descendente para facilitar la consulta de cambios recientes.
+    """
 
     id = models.UUIDField(
         primary_key=True, 

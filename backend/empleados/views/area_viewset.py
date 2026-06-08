@@ -14,9 +14,10 @@ class AreaViewSet(ModelViewSet):
     """
     Controlador para la gestión de Áreas Corporativas.
 
-    Ofrece operaciones completas (CRUD) para administrar los departamentos 
+    Ofrece operaciones completas (CRUD) para administrar los departamentos
      u organizaciones estructurales de la empresa.
     """
+
     queryset = Area.objects.all()
 
     filter_backends = [SearchFilter, OrderingFilter]
@@ -24,13 +25,26 @@ class AreaViewSet(ModelViewSet):
     ordering_fields = ["nombre"]
 
     def get_queryset(self):
+        """
+        Obtiene el conjunto de datos base para las Áreas.
+
+        Aplica optimizaciones de prefetch_related en la acción 'retrieve' para
+        cargar eficientemente los cargos y sus empleados asociados, evitando
+        múltiples consultas a la base de datos (problema N+1).
+        """
         queryset = super().get_queryset()
-        # Solo optimizamos la consulta con relaciones cuando realmente vamos a mostrarlas
         if self.action == "retrieve":
             return queryset.prefetch_related("cargos__empleados")
         return queryset
 
     def get_serializer_class(self):
+        """
+        Determina qué serializador utilizar según la acción solicitada.
+
+        - 'list': AreaListSerializer (resumen simplificado).
+        - 'retrieve': AreaDetailSerializer (detalle completo con cargos).
+        - Otros: AreaWriteSerializer (creación y actualización).
+        """
         if self.action == "list":
             return AreaListSerializer
 
@@ -43,8 +57,8 @@ class AreaViewSet(ModelViewSet):
         """
         Elimina un área específica del sistema.
 
-        Valida mediante restricciones de base de datos que el área no contenga 
-        cargos dependientes o empleados activos. Si existen dependencias, 
+        Valida mediante restricciones de base de datos que el área no contenga
+        cargos dependientes o empleados activos. Si existen dependencias,
         revierte la operación y retorna un error de protección.
         """
         try:

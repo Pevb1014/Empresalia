@@ -19,6 +19,25 @@ class EstadoEmpleado(models.TextChoices):
     INACTIVO = "INACTIVO", "Inactivo"
 
 class Empleado(models.Model):
+    """
+    Representa un trabajador de la organización.
+
+    Almacena la información maestra del personal y su posición actual a través del cargo.
+
+    Atributos:
+        id (UUIDField): Identificador único universal (UUID) del empleado.
+        numero_documento (CharField): Documento de identidad único del empleado.
+        nombre (CharField): Nombre completo del trabajador.
+        correo (EmailField): Dirección de correo electrónico institucional única.
+        cargo (ForeignKey): Cargo oficial asignado.
+        fecha_ingreso (DateField): Fecha en la que inició su relación laboral.
+        estado (CharField): Estado operativo actual (ACTIVO/INACTIVO).
+
+    Comportamiento:
+        - Normaliza nombres, correos y documentos antes de guardar.
+        - Asegura que el correo sea único (Case-Insensitive).
+        - Valida reglas de negocio (ej. fechas de ingreso válidas) mediante validadores.
+    """
 
     id = models.UUIDField(
         primary_key=True, 

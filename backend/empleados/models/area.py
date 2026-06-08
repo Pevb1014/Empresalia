@@ -9,31 +9,41 @@ from empleados.utils.text import normalizar_nombre, normalizar_texto
 
 
 class Area(models.Model):
+    """
+    Representa un departamento o unidad organizacional de la empresa.
+
+    Esta clase define la estructura de las áreas corporativas, sirviendo como
+    el nivel superior en la jerarquía de organización del personal.
+    Cada área agrupa diversos cargos y a su vez empleados dentro de ella.
+
+    Atributos:
+        id (UUIDField): Identificador único universal (UUID) del área.
+        nombre (CharField): Nombre único del área (ej. "Tecnología", "Recursos Humanos").
+        descripcion (TextField): Breve descripción de las funciones del área.
+
+    Comportamiento:
+        - Normaliza el nombre y la descripcion antes de guardar.
+        - Asegura la unicidad del 'nombre' (ignorando mayúsculas/minúsculas).
+    """
 
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
         editable=False,
-        help_text="Identificador único universal (UUID) del área corporativa."
+        help_text="Identificador único universal (UUID) del área corporativa.",
     )
 
     nombre = models.CharField(
         max_length=100,
-        validators=[
-            MinLengthValidator(2),
-            validar_nombre
-        ],
-        help_text="Nombre único identificativo del área corporativa"
+        validators=[MinLengthValidator(2), validar_nombre],
+        help_text="Nombre único identificativo del área corporativa",
     )
 
     descripcion = models.TextField(
-        blank=True, 
+        blank=True,
         null=True,
-        validators=[
-            MaxLengthValidator(1000),
-            validar_texto_seguro
-        ],
-        help_text="Breve descripción de las funciones y responsabilidades del área (máximo 1000 caracteres)."
+        validators=[MaxLengthValidator(1000), validar_texto_seguro],
+        help_text="Breve descripción de las funciones y responsabilidades del área (máximo 1000 caracteres).",
     )
 
     class Meta:
@@ -43,7 +53,7 @@ class Area(models.Model):
             UniqueConstraint(
                 Lower("nombre"),
                 name="unique_area_nombre_ci",
-                violation_error_message="Ya existe un área registrada con este nombre."
+                violation_error_message="Ya existe un área registrada con este nombre.",
             ),
         ]
 
