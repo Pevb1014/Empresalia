@@ -1,0 +1,1347 @@
+openapi: 3.0.3
+info:
+  title: API de Empresalia - Gestión de Empleados
+  version: 1.0.0
+  description: Documentación automatizada de los endpoints para la administración
+    de áreas, cargos, empleados e historial de cambios.
+paths:
+  /api/areas/:
+    get:
+      operationId: areas_list
+      description: |-
+        Controlador para la gestión de Áreas Corporativas.
+
+        Ofrece operaciones completas (CRUD) para administrar los departamentos
+         u organizaciones estructurales de la empresa.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - areas
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAreaListList'
+          description: ''
+    post:
+      operationId: areas_create
+      description: |-
+        Controlador para la gestión de Áreas Corporativas.
+
+        Ofrece operaciones completas (CRUD) para administrar los departamentos
+         u organizaciones estructurales de la empresa.
+      tags:
+      - areas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AreaWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AreaWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AreaWrite'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AreaWrite'
+          description: ''
+  /api/areas/{id}/:
+    get:
+      operationId: areas_retrieve
+      description: |-
+        Controlador para la gestión de Áreas Corporativas.
+
+        Ofrece operaciones completas (CRUD) para administrar los departamentos
+         u organizaciones estructurales de la empresa.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del área corporativa.
+        required: true
+      tags:
+      - areas
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AreaDetail'
+          description: ''
+    put:
+      operationId: areas_update
+      description: |-
+        Controlador para la gestión de Áreas Corporativas.
+
+        Ofrece operaciones completas (CRUD) para administrar los departamentos
+         u organizaciones estructurales de la empresa.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del área corporativa.
+        required: true
+      tags:
+      - areas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AreaWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AreaWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AreaWrite'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AreaWrite'
+          description: ''
+    patch:
+      operationId: areas_partial_update
+      description: |-
+        Controlador para la gestión de Áreas Corporativas.
+
+        Ofrece operaciones completas (CRUD) para administrar los departamentos
+         u organizaciones estructurales de la empresa.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del área corporativa.
+        required: true
+      tags:
+      - areas
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAreaWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAreaWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAreaWrite'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AreaWrite'
+          description: ''
+    delete:
+      operationId: areas_destroy
+      description: |-
+        Elimina un área específica del sistema.
+
+        Valida mediante restricciones de base de datos que el área no contenga
+        cargos dependientes o empleados activos. Si existen dependencias,
+        revierte la operación y retorna un error de protección.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del área corporativa.
+        required: true
+      tags:
+      - areas
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/cargos/:
+    get:
+      operationId: cargos_list
+      description: |-
+        Controlador para la administración de Cargos.
+
+        Permite crear, listar, actualizar y eliminar los puestos u ocupaciones
+        laborales de la empresa, vinculándolos a su respectiva área jerárquica.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - cargos
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCargoListList'
+          description: ''
+    post:
+      operationId: cargos_create
+      description: |-
+        Controlador para la administración de Cargos.
+
+        Permite crear, listar, actualizar y eliminar los puestos u ocupaciones
+        laborales de la empresa, vinculándolos a su respectiva área jerárquica.
+      tags:
+      - cargos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CargoWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CargoWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CargoWrite'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CargoWrite'
+          description: ''
+  /api/cargos/{id}/:
+    get:
+      operationId: cargos_retrieve
+      description: |-
+        Controlador para la administración de Cargos.
+
+        Permite crear, listar, actualizar y eliminar los puestos u ocupaciones
+        laborales de la empresa, vinculándolos a su respectiva área jerárquica.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del cargo.
+        required: true
+      tags:
+      - cargos
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CargoDetail'
+          description: ''
+    put:
+      operationId: cargos_update
+      description: |-
+        Controlador para la administración de Cargos.
+
+        Permite crear, listar, actualizar y eliminar los puestos u ocupaciones
+        laborales de la empresa, vinculándolos a su respectiva área jerárquica.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del cargo.
+        required: true
+      tags:
+      - cargos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CargoWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CargoWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CargoWrite'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CargoWrite'
+          description: ''
+    patch:
+      operationId: cargos_partial_update
+      description: |-
+        Controlador para la administración de Cargos.
+
+        Permite crear, listar, actualizar y eliminar los puestos u ocupaciones
+        laborales de la empresa, vinculándolos a su respectiva área jerárquica.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del cargo.
+        required: true
+      tags:
+      - cargos
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCargoWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCargoWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCargoWrite'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CargoWrite'
+          description: ''
+    delete:
+      operationId: cargos_destroy
+      description: |-
+        Elimina un cargo del sistema.
+
+        Verifica explícitamente en el ORM si existen empleados asignados a este
+        cargo antes de proceder. En caso afirmativo, interrumpe la eliminación
+        para preservar la integridad del historial del personal.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del cargo.
+        required: true
+      tags:
+      - cargos
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/empleados/:
+    get:
+      operationId: empleados_list
+      description: |-
+        Controlador integral del Personal (Empleados).
+
+        Procesa el registro, consulta y actualización de los datos maestros
+        de los trabajadores de la organización. Cuenta con capacidades robustas de
+        búsqueda por coincidencias, ordenamiento y filtrado por dependencias estructuradas.
+      parameters:
+      - in: query
+        name: cargo
+        schema:
+          type: string
+          format: uuid
+        description: Identificador único universal (UUID) del cargo.
+      - in: query
+        name: cargo__area
+        schema:
+          type: string
+          format: uuid
+        description: Identificador único universal (UUID) del área corporativa.
+      - in: query
+        name: estado
+        schema:
+          type: string
+          enum:
+          - ACTIVO
+          - INACTIVO
+        description: |-
+          Estado operativo del empleado en el sistema (ACTIVO/INACTIVO).
+
+          * `ACTIVO` - Activo
+          * `INACTIVO` - Inactivo
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: Un término de búsqueda.
+        schema:
+          type: string
+      tags:
+      - empleados
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEmpleadoListList'
+          description: ''
+    post:
+      operationId: empleados_create
+      description: |-
+        Controlador integral del Personal (Empleados).
+
+        Procesa el registro, consulta y actualización de los datos maestros
+        de los trabajadores de la organización. Cuenta con capacidades robustas de
+        búsqueda por coincidencias, ordenamiento y filtrado por dependencias estructuradas.
+      tags:
+      - empleados
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmpleadoWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmpleadoWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmpleadoWrite'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmpleadoWrite'
+          description: ''
+  /api/empleados/{id}/:
+    get:
+      operationId: empleados_retrieve
+      description: |-
+        Controlador integral del Personal (Empleados).
+
+        Procesa el registro, consulta y actualización de los datos maestros
+        de los trabajadores de la organización. Cuenta con capacidades robustas de
+        búsqueda por coincidencias, ordenamiento y filtrado por dependencias estructuradas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del empleado.
+        required: true
+      tags:
+      - empleados
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmpleadoDetail'
+          description: ''
+    put:
+      operationId: empleados_update
+      description: |-
+        Controlador integral del Personal (Empleados).
+
+        Procesa el registro, consulta y actualización de los datos maestros
+        de los trabajadores de la organización. Cuenta con capacidades robustas de
+        búsqueda por coincidencias, ordenamiento y filtrado por dependencias estructuradas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del empleado.
+        required: true
+      tags:
+      - empleados
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmpleadoWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EmpleadoWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EmpleadoWrite'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmpleadoWrite'
+          description: ''
+    patch:
+      operationId: empleados_partial_update
+      description: |-
+        Controlador integral del Personal (Empleados).
+
+        Procesa el registro, consulta y actualización de los datos maestros
+        de los trabajadores de la organización. Cuenta con capacidades robustas de
+        búsqueda por coincidencias, ordenamiento y filtrado por dependencias estructuradas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del empleado.
+        required: true
+      tags:
+      - empleados
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEmpleadoWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEmpleadoWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEmpleadoWrite'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmpleadoWrite'
+          description: ''
+    delete:
+      operationId: empleados_destroy
+      description: |-
+        Controlador integral del Personal (Empleados).
+
+        Procesa el registro, consulta y actualización de los datos maestros
+        de los trabajadores de la organización. Cuenta con capacidades robustas de
+        búsqueda por coincidencias, ordenamiento y filtrado por dependencias estructuradas.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del empleado.
+        required: true
+      tags:
+      - empleados
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/historial/:
+    get:
+      operationId: historial_list
+      description: |-
+        Controlador de Solo Lectura para Auditoría del Sistema.
+
+        Expone las bitácoras automáticas de los cambios sufridos en las fichas de
+        los empleados. Permite trazar qué campos variaron, cuándo sucedió,
+        y cuáles eran los valores anteriores y nuevos correspondientes.
+      parameters:
+      - in: query
+        name: empleado
+        schema:
+          type: string
+          format: uuid
+        description: Identificador único universal (UUID) del empleado.
+      - in: query
+        name: empleado__cargo
+        schema:
+          type: string
+          format: uuid
+        description: Identificador único universal (UUID) del cargo.
+      - in: query
+        name: empleado__cargo__area
+        schema:
+          type: string
+          format: uuid
+        description: Identificador único universal (UUID) del área corporativa.
+      - name: ordering
+        required: false
+        in: query
+        description: Qué campo usar para ordenar los resultados.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: Un número de página dentro del conjunto de resultados paginado.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Número de resultados a devolver por página.
+        schema:
+          type: integer
+      - in: query
+        name: tipo_cambio
+        schema:
+          type: string
+          enum:
+          - ACTUALIZACION
+          - CREACION
+        description: |-
+          Tipo de operación ejecutada sobre el registro del empleado (CREACION, ACTUALIZACION).
+
+          * `CREACION` - Creación
+          * `ACTUALIZACION` - Actualización
+      tags:
+      - historial
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedHistorialListList'
+          description: ''
+  /api/historial/{id}/:
+    get:
+      operationId: historial_retrieve
+      description: |-
+        Controlador de Solo Lectura para Auditoría del Sistema.
+
+        Expone las bitácoras automáticas de los cambios sufridos en las fichas de
+        los empleados. Permite trazar qué campos variaron, cuándo sucedió,
+        y cuáles eran los valores anteriores y nuevos correspondientes.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) de la auditoría de cambio.
+        required: true
+      tags:
+      - historial
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistorialDetail'
+          description: ''
+components:
+  schemas:
+    AreaDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del área corporativa.
+        nombre:
+          type: string
+          description: Nombre único identificativo del área corporativa
+          maxLength: 100
+          minLength: 2
+        descripcion:
+          type: string
+          nullable: true
+          description: Breve descripción de las funciones y responsabilidades del
+            área (máximo 1000 caracteres).
+          maxLength: 1000
+        cargos:
+          type: array
+          items:
+            $ref: '#/components/schemas/CargoNested'
+          readOnly: true
+      required:
+      - cargos
+      - id
+      - nombre
+    AreaList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del área corporativa.
+        nombre:
+          type: string
+          description: Nombre único identificativo del área corporativa
+          maxLength: 100
+          minLength: 2
+      required:
+      - id
+      - nombre
+    AreaNested:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del área corporativa.
+        nombre:
+          type: string
+          description: Nombre único identificativo del área corporativa
+          maxLength: 100
+          minLength: 2
+      required:
+      - id
+      - nombre
+    AreaWrite:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del área corporativa.
+        nombre:
+          type: string
+          description: Nombre único identificativo del área corporativa
+          maxLength: 100
+          minLength: 2
+        descripcion:
+          type: string
+          nullable: true
+          description: Breve descripción de las funciones y responsabilidades del
+            área (máximo 1000 caracteres).
+          maxLength: 1000
+      required:
+      - id
+      - nombre
+    CargoDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del cargo.
+        nombre:
+          type: string
+          description: Nombre único identificativo del cargo corporativo
+          maxLength: 100
+          minLength: 2
+        descripcion:
+          type: string
+          nullable: true
+          description: Breve descripción de las funciones y responsabilidades del
+            cargo (máximo 1000 caracteres).
+          maxLength: 1000
+        area:
+          allOf:
+          - $ref: '#/components/schemas/AreaNested'
+          readOnly: true
+      required:
+      - area
+      - id
+      - nombre
+    CargoList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del cargo.
+        nombre:
+          type: string
+          description: Nombre único identificativo del cargo corporativo
+          maxLength: 100
+          minLength: 2
+        area:
+          type: string
+          readOnly: true
+      required:
+      - area
+      - id
+      - nombre
+    CargoNested:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del cargo.
+        nombre:
+          type: string
+          description: Nombre único identificativo del cargo corporativo
+          maxLength: 100
+          minLength: 2
+      required:
+      - id
+      - nombre
+    CargoWrite:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del cargo.
+        nombre:
+          type: string
+          description: Nombre único identificativo del cargo corporativo
+          maxLength: 100
+          minLength: 2
+        descripcion:
+          type: string
+          nullable: true
+          description: Breve descripción de las funciones y responsabilidades del
+            cargo (máximo 1000 caracteres).
+          maxLength: 1000
+        area:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del área corporativa.
+      required:
+      - area
+      - id
+      - nombre
+    EmpleadoDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del empleado.
+        numero_documento:
+          type: string
+          description: Número de documento de identidad único del empleado.
+          maxLength: 20
+          minLength: 5
+        nombre:
+          type: string
+          description: Nombre del empleado (máximo 100 caracteres).
+          maxLength: 100
+          minLength: 2
+        correo:
+          type: string
+          format: email
+          description: Dirección de correo electrónico institucional del empleado.
+          maxLength: 100
+          minLength: 3
+        cargo:
+          allOf:
+          - $ref: '#/components/schemas/CargoNested'
+          readOnly: true
+        area:
+          allOf:
+          - $ref: '#/components/schemas/AreaNested'
+          readOnly: true
+        fecha_ingreso:
+          type: string
+          format: date
+          description: Fecha en la que el empleado ingresó a trabajar en la empresa.
+        estado:
+          allOf:
+          - $ref: '#/components/schemas/EstadoEnum'
+          description: |-
+            Estado operativo del empleado en el sistema (ACTIVO/INACTIVO).
+
+            * `ACTIVO` - Activo
+            * `INACTIVO` - Inactivo
+      required:
+      - area
+      - cargo
+      - correo
+      - fecha_ingreso
+      - id
+      - nombre
+      - numero_documento
+    EmpleadoList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del empleado.
+        nombre:
+          type: string
+          description: Nombre del empleado (máximo 100 caracteres).
+          maxLength: 100
+          minLength: 2
+        area:
+          type: string
+          readOnly: true
+        cargo:
+          type: string
+          readOnly: true
+      required:
+      - area
+      - cargo
+      - id
+      - nombre
+    EmpleadoWrite:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del empleado.
+        numero_documento:
+          type: string
+          description: Número de documento de identidad único del empleado.
+          maxLength: 20
+          minLength: 5
+        nombre:
+          type: string
+          description: Nombre del empleado (máximo 100 caracteres).
+          maxLength: 100
+          minLength: 2
+        correo:
+          type: string
+          format: email
+          description: Dirección de correo electrónico institucional del empleado.
+          maxLength: 100
+          minLength: 3
+        fecha_ingreso:
+          type: string
+          format: date
+          description: Fecha en la que el empleado ingresó a trabajar en la empresa.
+        estado:
+          allOf:
+          - $ref: '#/components/schemas/EstadoEnum'
+          description: |-
+            Estado operativo del empleado en el sistema (ACTIVO/INACTIVO).
+
+            * `ACTIVO` - Activo
+            * `INACTIVO` - Inactivo
+        cargo:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del cargo.
+          writeOnly: true
+      required:
+      - cargo
+      - correo
+      - fecha_ingreso
+      - id
+      - nombre
+      - numero_documento
+    EstadoEnum:
+      enum:
+      - ACTIVO
+      - INACTIVO
+      type: string
+      description: |-
+        * `ACTIVO` - Activo
+        * `INACTIVO` - Inactivo
+    HistorialDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) de la auditoría de cambio.
+        empleado:
+          type: string
+          readOnly: true
+        cargo:
+          type: string
+          readOnly: true
+        area:
+          type: string
+          readOnly: true
+        fecha_cambio:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Fecha y hora exacta en la que se efectuó y registró el cambio
+            de manera automática.
+        tipo_cambio:
+          type: string
+          readOnly: true
+          description: Tipo de operación ejecutada sobre el registro del empleado
+            (CREACION, ACTUALIZACION).
+        campo_cambiado:
+          type: string
+          readOnly: true
+          description: Nombre del atributo o columna específica que fue modificada.
+        valor_anterior:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Valor que tenía el campo antes del cambio (permanece vacío
+            si el tipo es CREACION).
+        valor_nuevo:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Nuevo valor asignado al campo tras la modificación realizada.
+      required:
+      - area
+      - campo_cambiado
+      - cargo
+      - empleado
+      - fecha_cambio
+      - id
+      - tipo_cambio
+      - valor_anterior
+      - valor_nuevo
+    HistorialList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) de la auditoría de cambio.
+        empleado:
+          type: string
+          readOnly: true
+        cargo:
+          type: string
+          readOnly: true
+        area:
+          type: string
+          readOnly: true
+        fecha_cambio:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Fecha y hora exacta en la que se efectuó y registró el cambio
+            de manera automática.
+        tipo_cambio:
+          type: string
+          readOnly: true
+          description: Tipo de operación ejecutada sobre el registro del empleado
+            (CREACION, ACTUALIZACION).
+      required:
+      - area
+      - cargo
+      - empleado
+      - fecha_cambio
+      - id
+      - tipo_cambio
+    PaginatedAreaListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AreaList'
+    PaginatedCargoListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CargoList'
+    PaginatedEmpleadoListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmpleadoList'
+    PaginatedHistorialListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistorialList'
+    PatchedAreaWrite:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del área corporativa.
+        nombre:
+          type: string
+          description: Nombre único identificativo del área corporativa
+          maxLength: 100
+          minLength: 2
+        descripcion:
+          type: string
+          nullable: true
+          description: Breve descripción de las funciones y responsabilidades del
+            área (máximo 1000 caracteres).
+          maxLength: 1000
+    PatchedCargoWrite:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del cargo.
+        nombre:
+          type: string
+          description: Nombre único identificativo del cargo corporativo
+          maxLength: 100
+          minLength: 2
+        descripcion:
+          type: string
+          nullable: true
+          description: Breve descripción de las funciones y responsabilidades del
+            cargo (máximo 1000 caracteres).
+          maxLength: 1000
+        area:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del área corporativa.
+    PatchedEmpleadoWrite:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identificador único universal (UUID) del empleado.
+        numero_documento:
+          type: string
+          description: Número de documento de identidad único del empleado.
+          maxLength: 20
+          minLength: 5
+        nombre:
+          type: string
+          description: Nombre del empleado (máximo 100 caracteres).
+          maxLength: 100
+          minLength: 2
+        correo:
+          type: string
+          format: email
+          description: Dirección de correo electrónico institucional del empleado.
+          maxLength: 100
+          minLength: 3
+        fecha_ingreso:
+          type: string
+          format: date
+          description: Fecha en la que el empleado ingresó a trabajar en la empresa.
+        estado:
+          allOf:
+          - $ref: '#/components/schemas/EstadoEnum'
+          description: |-
+            Estado operativo del empleado en el sistema (ACTIVO/INACTIVO).
+
+            * `ACTIVO` - Activo
+            * `INACTIVO` - Inactivo
+        cargo:
+          type: string
+          format: uuid
+          description: Identificador único universal (UUID) del cargo.
+          writeOnly: true
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

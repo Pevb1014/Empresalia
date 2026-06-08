@@ -32,6 +32,11 @@ class HistorialViewSet(ModelViewSet):
         return HistorialListSerializer
 
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ["empleado", "tipo_cambio"]
+    filterset_fields = {
+        "empleado": ["exact"],
+        "tipo_cambio": ["exact"],
+        "empleado__cargo": ["exact"],
+        "empleado__cargo__area": ["exact"],
+    }
     ordering_fields = ["fecha_cambio"]
     ordering = ["-fecha_cambio"]
