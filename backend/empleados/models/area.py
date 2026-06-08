@@ -1,10 +1,11 @@
 import uuid
 
 from django.db import models
-from django.db.models.functions import Lower
 from django.db.models import UniqueConstraint
-from django.core.validators import MaxLengthValidator
-from empleados.utils.text import normalize_name, normalize_text
+from django.db.models.functions import Lower
+from django.core.validators import MaxLengthValidator, MinLengthValidator
+from empleados.validators.validators import validar_texto_seguro, validar_nombre_simple
+from empleados.utils.text import normalizar_nombre, normalizar_texto
 
 
 class Area(models.Model):
@@ -18,31 +19,40 @@ class Area(models.Model):
 
     nombre = models.CharField(
         max_length=100,
-        help_text="Nombre único identificativo del área corporativa (ej. Tecnología, Recursos Humanos)."
+        validators=[
+            MinLengthValidator(2),
+            validar_nombre_simple
+        ],
+        help_text="Nombre único identificativo del área corporativa"
     )
 
     descripcion = models.TextField(
-        validators=[MaxLengthValidator(500)],
         blank=True, 
         null=True,
-        help_text="Breve descripción de las funciones y responsabilidades del área (máximo 500 caracteres)."
+        validators=[
+            MaxLengthValidator(1000),
+            validar_texto_seguro
+        ],
+        help_text="Breve descripción de las funciones y responsabilidades del área (máximo 1000 caracteres)."
     )
 
     class Meta:
         db_table = "areas"
         ordering = ["nombre"]
-
         constraints = [
             UniqueConstraint(
                 Lower("nombre"),
                 name="unique_area_nombre_ci"
-            )
+            ),
         ]
 
     def __str__(self):
         return self.nombre
-    
-    def save(self, *args, **kwargs):
-        self.nombre = normalize_name(self.nombre)
-        self.descripcion = normalize_text(self.descripcion)
-        super().save(*args, **kwargs)
+
+def save(self, *args, **kwargs):
+
+    self.nombre = normalizar_nombre(self.nombre)
+    self.descripcion = normalizar_texto(self.descripcion)
+
+    self.full_clean()
+    super().save(*args, **kwargs)

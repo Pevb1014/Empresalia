@@ -17,11 +17,18 @@ class AreaViewSet(ModelViewSet):
     Ofrece operaciones completas (CRUD) para administrar los departamentos 
      u organizaciones estructurales de la empresa.
     """
-    queryset = Area.objects.prefetch_related("cargos__empleados").all()
+    queryset = Area.objects.all()
 
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ["nombre", "descripcion"]
     ordering_fields = ["nombre"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Solo optimizamos la consulta con relaciones cuando realmente vamos a mostrarlas
+        if self.action == "retrieve":
+            return queryset.prefetch_related("cargos__empleados")
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "list":

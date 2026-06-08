@@ -5,7 +5,8 @@ from django.core.validators import MaxLengthValidator
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 from empleados.models.area import Area
-from empleados.utils.text import normalize_name, normalize_text
+from empleados.utils.text import normalizar_nombre, normalizar_texto
+from empleados.validators import validar_nombre_simple
 
 
 class Cargo(models.Model):
@@ -19,6 +20,7 @@ class Cargo(models.Model):
 
     nombre = models.CharField(
         max_length=100,
+        validators=[validar_nombre_simple],
         help_text="Nombre asignado al cargo u ocupación dentro de la empresa."
     )
 
@@ -51,6 +53,6 @@ class Cargo(models.Model):
         return f"{self.nombre} ({self.area.nombre})"
 
     def save(self, *args, **kwargs):
-        self.nombre = normalize_name(self.nombre)
-        self.descripcion = normalize_text(self.descripcion)
+        self.nombre = normalizar_nombre(self.nombre)
+        self.descripcion = normalizar_texto(self.descripcion)
         super().save(*args, **kwargs)

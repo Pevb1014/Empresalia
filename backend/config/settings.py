@@ -79,7 +79,10 @@ DATABASES = {
         'PASSWORD': os.getenv("DB_PASSWORD"),
         'HOST': os.getenv("DB_HOST"),
         'PORT': os.getenv("DB_PORT"),
-    }
+        "OPTIONS": {
+            "options": f"-c search_path={os.getenv('DB_SCHEMA', 'public')}"
+        }
+    },
 }
 
 
@@ -119,9 +122,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
+# Default primary key field type
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",") if os.getenv("CORS_ALLOWED_ORIGINS") else []
+
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",

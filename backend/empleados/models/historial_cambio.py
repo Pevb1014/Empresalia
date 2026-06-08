@@ -7,7 +7,6 @@ from .empleado import Empleado
 class TipoCambio(models.TextChoices):
     CREACION = "CREACION", "Creación"
     ACTUALIZACION = "ACTUALIZACION", "Actualización"
-    ELIMINACION = "ELIMINACION", "Eliminación"
 
 
 class HistorialCambio(models.Model):

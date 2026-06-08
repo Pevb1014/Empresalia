@@ -1,13 +1,11 @@
 import uuid
 
 from django.db import models
-from .area import Area
 from .cargo import Cargo
-from django.core.exceptions import ValidationError
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
-from empleados.validators import validar_fecha_ingreso
-from empleados.utils.text import normalize_email, normalize_name
+from empleados.validators import validar_fecha_ingreso, validar_nombre_simple
+from empleados.utils.text import normalizar_email, normalizar_nombre
 
 class EstadoEmpleado(models.TextChoices):
     ACTIVO = "ACTIVO", "Activo"
@@ -29,6 +27,7 @@ class Empleado(models.Model):
 
     nombre = models.CharField(
         max_length=150,
+        validators=[validar_nombre_simple],
         help_text="Nombre completo del empleado."
     )
 
@@ -45,7 +44,7 @@ class Empleado(models.Model):
 
     fecha_ingreso = models.DateField(
         validators=[validar_fecha_ingreso],
-        help_text="Fecha oficial en la que el empleado ingresó a trabajar en la empresa (Formato: AAAA-MM-DD)."
+        help_text="Fecha oficial en la que el empleado ingresó a trabajar en la empresa."
     )
 
     estado = models.CharField(
@@ -67,16 +66,12 @@ class Empleado(models.Model):
     def __str__(self):
         return f"{self.nombre} - {self.numero_documento}"
 
-    def clean(self):
-        if self.cargo and self.area:
-            if self.cargo.area_id != self.area_id:
-                raise ValidationError("El cargo no pertenece al área seleccionada.")
 
     def save(self, *args, **kwargs):
         self.clean()
 
-        self.nombre = normalize_name(self.nombre)
-        self.correo = normalize_email(self.correo)
+        self.nombre = normalizar_nombre(self.nombre)
+        self.correo = normalizar_email(self.correo)
         self.numero_documento = self.numero_documento.strip()
 
         super().save(*args, **kwargs)
