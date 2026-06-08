@@ -1,5 +1,5 @@
-from .custom_pagination import CustomPagination
+from .custom_pagination import StandardResultsSetPagination
 
 __all__ = [
-    "CustomPagination",
+    "StandardResultsSetPagination",
 ]
