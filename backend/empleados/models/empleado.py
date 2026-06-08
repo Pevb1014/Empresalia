@@ -3,9 +3,16 @@ import uuid
 from django.db import models
 from .cargo import Cargo
 from django.db.models import UniqueConstraint
+from django.core.validators import MinLengthValidator
 from django.db.models.functions import Lower
-from empleados.validators import validar_fecha_ingreso, validar_nombre_simple
-from empleados.utils.text import normalizar_email, normalizar_nombre
+from empleados.validators.validators import (
+    validar_nombre, 
+    validar_fecha_ingreso,
+    validar_numero_documento,
+    validar_email_corporativo
+)
+from empleados.utils.text import normalizar_documento, normalizar_email, normalizar_nombre
+from empleados.utils.dates import normalizar_fecha_a_date
 
 class EstadoEmpleado(models.TextChoices):
     ACTIVO = "ACTIVO", "Activo"
@@ -21,18 +28,30 @@ class Empleado(models.Model):
     )
 
     numero_documento = models.CharField(
-        max_length=50,
+        max_length=20,
+        validators=[
+            MinLengthValidator(5),
+            validar_numero_documento
+        ],
         help_text="Número de documento de identidad único del empleado."
     )
 
     nombre = models.CharField(
-        max_length=150,
-        validators=[validar_nombre_simple],
-        help_text="Nombre completo del empleado."
+        max_length=100,
+        validators=[
+            MinLengthValidator(2),
+            validar_nombre
+        ],
+        help_text="Nombre del empleado (máximo 100 caracteres)."
     )
 
     correo = models.EmailField(
-        help_text="Dirección de correo electrónico institucional o de contacto del empleado."
+        max_length=100,
+        validators=[
+            MinLengthValidator(3),
+            validar_email_corporativo
+        ],
+        help_text="Dirección de correo electrónico institucional del empleado."
     )
 
     cargo = models.ForeignKey(
@@ -44,7 +63,7 @@ class Empleado(models.Model):
 
     fecha_ingreso = models.DateField(
         validators=[validar_fecha_ingreso],
-        help_text="Fecha oficial en la que el empleado ingresó a trabajar en la empresa."
+        help_text="Fecha en la que el empleado ingresó a trabajar en la empresa."
     )
 
     estado = models.CharField(
@@ -68,10 +87,10 @@ class Empleado(models.Model):
 
 
     def save(self, *args, **kwargs):
-        self.clean()
-
         self.nombre = normalizar_nombre(self.nombre)
         self.correo = normalizar_email(self.correo)
-        self.numero_documento = self.numero_documento.strip()
+        self.numero_documento = normalizar_documento(self.numero_documento)
+        self.fecha_ingreso = normalizar_fecha_a_date(self.fecha_ingreso)
 
+        self.full_clean()
         super().save(*args, **kwargs)

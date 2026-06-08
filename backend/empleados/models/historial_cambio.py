@@ -20,12 +20,14 @@ class HistorialCambio(models.Model):
 
     fecha_cambio = models.DateTimeField(
         auto_now_add=True,
+        editable=False,
         help_text="Fecha y hora exacta en la que se efectuó y registró el cambio de manera automática."
     )
 
     empleado = models.ForeignKey(
         Empleado,
         on_delete=models.CASCADE,
+        editable=False,
         related_name="historial",
         help_text="Empleado que sufrió la modificación en sus datos."
     )
@@ -33,23 +35,27 @@ class HistorialCambio(models.Model):
     tipo_cambio = models.CharField(
         max_length=20,
         choices=TipoCambio.choices,
-        help_text="Tipo de operación ejecutada sobre el registro del empleado (CREACION, ACTUALIZACION, ELIMINACION)."
+        editable=False,
+        help_text="Tipo de operación ejecutada sobre el registro del empleado (CREACION, ACTUALIZACION)."
     )
 
     campo_cambiado = models.CharField(
         max_length=100,
+        editable=False,
         help_text="Nombre del atributo o columna específica que fue modificada."
     )
 
     valor_anterior = models.TextField(
         null=True, 
         blank=True,
+        editable=False,
         help_text="Valor que tenía el campo antes del cambio (permanece vacío si el tipo es CREACION)."
     )
 
     valor_nuevo = models.TextField(
         null=True, 
         blank=True,
+        editable=False,
         help_text="Nuevo valor asignado al campo tras la modificación realizada."
     )
 

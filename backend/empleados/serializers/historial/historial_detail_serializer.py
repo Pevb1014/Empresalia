@@ -1,11 +1,12 @@
 from rest_framework import serializers
 from empleados.models import HistorialCambio
-from empleados.serializers.empleado.empleado_nested_serializer import EmpleadoNestedSerializer
 
 
 class HistorialDetailSerializer(serializers.ModelSerializer):
 
-    empleado = EmpleadoNestedSerializer(read_only=True)
+    empleado = serializers.CharField(source="empleado.nombre", read_only=True)
+    cargo = serializers.CharField(source="empleado.cargo.nombre", read_only=True)
+    area = serializers.CharField(source="empleado.cargo.area.nombre", read_only=True)
 
     class Meta:
         model = HistorialCambio

@@ -15,11 +15,7 @@ class AreaWriteSerializer(serializers.ModelSerializer):
 
     def validate_nombre(self, value):
 
-        value = normalizar_nombre(value)
-
-        queryset = Area.objects.filter(
-            nombre__iexact=value
-        )
+        queryset = Area.objects.filter(nombre__iexact=value)
 
         if self.instance:
             queryset = queryset.exclude(pk=self.instance.pk)

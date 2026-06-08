@@ -1,12 +1,12 @@
 import uuid
 
 from django.db import models
-from django.core.validators import MaxLengthValidator
+from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 from empleados.models.area import Area
 from empleados.utils.text import normalizar_nombre, normalizar_texto
-from empleados.validators import validar_nombre_simple
+from empleados.validators.validators import validar_texto_seguro, validar_nombre
 
 
 class Cargo(models.Model):
@@ -20,22 +20,28 @@ class Cargo(models.Model):
 
     nombre = models.CharField(
         max_length=100,
-        validators=[validar_nombre_simple],
-        help_text="Nombre asignado al cargo u ocupación dentro de la empresa."
+        validators=[
+            MinLengthValidator(2),
+            validar_nombre
+        ],
+        help_text="Nombre único identificativo del cargo corporativo"
     )
 
     descripcion = models.TextField(
-        validators=[MaxLengthValidator(500)],
-        blank=True,
+        blank=True, 
         null=True,
-        help_text="Descripción detallada de las tareas asignadas al cargo (máximo 500 caracteres)."
+        validators=[
+            MaxLengthValidator(1000),
+            validar_texto_seguro
+        ],
+        help_text="Breve descripción de las funciones y responsabilidades del cargo (máximo 1000 caracteres)."
     )
 
     area = models.ForeignKey(
         Area,
         on_delete=models.PROTECT,
         related_name="cargos",
-        help_text="Área organizativa a la que pertenece estructuralmente este cargo."
+        help_text="Área corporativa a la que pertenece este cargo."
     )
 
     class Meta:
@@ -45,7 +51,8 @@ class Cargo(models.Model):
         constraints = [
             UniqueConstraint(
                 Lower("nombre"),
-                name="unique_cargo_nombre_ci"
+                name="unique_cargo_nombre_ci",
+                violation_error_message="Ya existe un cargo registrado con este nombre."
             )
         ]
 
@@ -55,4 +62,5 @@ class Cargo(models.Model):
     def save(self, *args, **kwargs):
         self.nombre = normalizar_nombre(self.nombre)
         self.descripcion = normalizar_texto(self.descripcion)
+        self.full_clean()
         super().save(*args, **kwargs)

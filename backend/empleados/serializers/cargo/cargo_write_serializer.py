@@ -4,10 +4,7 @@ from empleados.models import Cargo, Area
 
 class CargoWriteSerializer(serializers.ModelSerializer):
 
-    area_id = serializers.PrimaryKeyRelatedField(
-        queryset=Area.objects.all(),
-        source="area"
-    )
+    area = serializers.PrimaryKeyRelatedField(queryset=Area.objects.all())
 
     class Meta:
         model = Cargo
@@ -15,7 +12,7 @@ class CargoWriteSerializer(serializers.ModelSerializer):
             "id",
             "nombre",
             "descripcion",
-            "area_id",
+            "area",
         )
         read_only_fields = ("id",)
 
@@ -29,7 +26,7 @@ class CargoWriteSerializer(serializers.ModelSerializer):
 
         if queryset.exists():
             raise serializers.ValidationError(
-                "Ya existe un cargo con este nombre."
+                "Ya existe un cargo registrado con este nombre."
             )
 
         return value

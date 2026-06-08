@@ -16,12 +16,18 @@ class CargoViewSet(ModelViewSet):
     laborales de la empresa, vinculándolos a su respectiva área jerárquica.
     """
 
-    queryset = Cargo.objects.select_related("area").prefetch_related("empleados").all()
+    queryset = Cargo.objects.all()
 
     filter_backends = [SearchFilter, OrderingFilter]
 
     search_fields = ["nombre", "descripcion"]
     ordering_fields = ["nombre"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related("area")
+        if self.action == "retrieve":
+            return queryset.prefetch_related("empleados")
+        return queryset
 
     def get_serializer_class(self):
 
