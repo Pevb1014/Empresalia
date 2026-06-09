@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 // Importamos eliminarArea junto con las demás funciones de la API
-import { obtenerArea, actualizarArea, eliminarArea } from "@/api/areaApi";
+import { obtenerArea, actualizarArea, eliminarArea } from "@/api/area.api";
 import { adaptAreaToForm, adaptFormToAreaPayload } from "@/adapters/areas.adapter";
 import DynamicForm, { type FormField } from "@/components/DynamicForm.vue";
 
-const route = useRoute();
+const props = defineProps<{
+  id: string;
+}>();
 const router = useRouter();
-const areaId = route.params.id as string;
 
 // Estados de la vista
 const areaRaw = ref<any>(null);
@@ -26,7 +27,7 @@ const areaFields: FormField[] = [
 async function cargarDetalle() {
   try {
     cargando.value = true;
-    const res = await obtenerArea(areaId);
+    const res = await obtenerArea(props.id);
     areaRaw.value = res.data;
     areaFormData.value = adaptAreaToForm(res.data);
   } catch (error) {
@@ -47,7 +48,7 @@ async function handleUpdateSubmit(formData: Record<string, any>) {
 
   try {
     const payload = adaptFormToAreaPayload(formData);
-    const res = await actualizarArea(areaId, payload);
+    const res = await actualizarArea(props.id, payload);
     
     areaRaw.value = res.data;
     areaFormData.value = adaptAreaToForm(res.data);
@@ -74,7 +75,7 @@ async function handleEliminar() {
   errorMsg.value = "";
 
   try {
-    await eliminarArea(areaId);
+    await eliminarArea(props.id);
     // Redirección al listado tras borrar con éxito
     router.push({ name: "areas" });
   } catch (error) {

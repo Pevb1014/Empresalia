@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { crearCargo } from "@/api/cargoApi";
-import { listarAreas } from "@/api/areaApi";
+import { crearCargo } from "@/api/cargo.api.ts";
+import { listarAreas } from "@/api/area.api.ts";
 import DynamicForm, { type FormField } from "@/components/DynamicForm.vue";
 import { adaptFormToCargoPayload } from "@/adapters/cargos.adapter";
 
@@ -25,6 +25,13 @@ const cargoFields = ref<FormField[]>([
     placeholder: "Seleccione el área de pertenencia",
     required: true,
     options: [], 
+  },
+  {
+    key: "descripcion",
+    label: "Descripción",
+    type: "textarea",
+    placeholder: "Escriba las funciones o responsabilidades (opcional)...",
+    required: false,
   },
 ]);
 
@@ -55,7 +62,8 @@ async function handleFormSubmit(formData: Record<string, any>) {
   } catch (error: any) {
     console.error(error);
     if (error.response?.data) {
-      errorMsg.value = error.response.data.nombre?.[0] || "Error al validar los datos.";
+      const data = error.response.data;
+      errorMsg.value = data.error || data.nombre?.[0] || "Ocurrió un error al validar los datos en el servidor.";
     } else {
       errorMsg.value = "Error de comunicación con el servidor.";
     }
@@ -66,9 +74,11 @@ async function handleFormSubmit(formData: Record<string, any>) {
 </script>
 
 <template>
-  <div class="form-container">
-    <h1>Crear Nuevo Cargo</h1>
-    <hr />
+  <div class="view-container">
+    <header class="view-header">
+      <h1>Crear Nuevo Cargo</h1>
+    </header>
+
     <DynamicForm
       :fields="cargoFields"
       :loading="cargando"
@@ -82,6 +92,24 @@ async function handleFormSubmit(formData: Record<string, any>) {
 </template>
 
 <style scoped>
-.form-container { max-width: 600px; margin: 2rem auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-hr { margin-bottom: 1.5rem; border: 0; border-top: 1px solid #eee; }
+.view-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.view-header {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 0.5rem;
+}
+
+.view-header h1 {
+  font-size: 1.5rem;
+  color: #1a1a1a;
+  margin: 0;
+}
 </style>

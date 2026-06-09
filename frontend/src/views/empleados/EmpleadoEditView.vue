@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { obtenerEmpleado, actualizarEmpleado } from "@/api/empleadoApi";
-import { listarCargos } from "@/api/cargoApi";
+import { obtenerEmpleado, actualizarEmpleado } from "@/api/empleado.api.ts";
+import { listarCargos } from "@/api/cargo.api.ts";
 import { adaptEmpleadoToForm, adaptFormToEmpleadoPayload } from "@/adapters/empleados.adapter";
 import DynamicForm, { type FormField } from "@/components/DynamicForm.vue";
 

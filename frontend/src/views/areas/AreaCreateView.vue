@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { crearArea } from "@/api/areaApi";
+import { crearArea } from "@/api/area.api";
 import DynamicForm, { type FormField } from "@/components/DynamicForm.vue";
 import { adaptFormToAreaPayload } from "@/adapters/areas.adapter";
 

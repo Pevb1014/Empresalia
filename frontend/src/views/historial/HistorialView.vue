@@ -1,43 +1,48 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import api from "@/api/axios";
 import DataTable from "@/components/DataTable.vue";
-import { adaptHistorial } from "@/adapters/historial.adapter";
+import { adaptHistorialToTable } from "@/adapters/historial.adapter";
 
+const router = useRouter();
 const historial = ref([]);
+const cargando = ref(true);
 
 const columns = [
   { key: "empleado", label: "Empleado" },
-  { key: "accion", label: "Acción" },
+  { key: "tipo", label: "Operación" },
   { key: "fecha", label: "Fecha" }
 ];
 
-onMounted(async () => {
-  const res = await api.get("historial/");
-
-  console.log("RAW HISTORIAL:", res.data);
-
-  historial.value = res.data.results.map(adaptHistorial);
-
-  console.log("ADAPTED HISTORIAL:", historial.value);
-});
-
-function editar(item: any) {
-  console.log("Editar historial:", item);
+async function cargarHistorial() {
+  try {
+    cargando.value = true;
+    const res = await api.get("historial/");
+    historial.value = res.data.results.map(adaptHistorialToTable);
+  } catch (error) {
+    console.error("Error al cargar historial:", error);
+  } finally {
+    cargando.value = false;
+  }
 }
 
-function eliminar(item: any) {
-  console.log("Eliminar historial:", item);
+onMounted(cargarHistorial);
+
+function verDetalle(item: any) {
+  router.push({ name: "historial-detail", params: { id: item.id } });
 }
 </script>
 
 <template>
   <h1>Historial</h1>
 
-  <DataTable
+  <div v-if="cargando">Cargando bitácoras...</div>
+  <DataTable v-else
     :data="historial"
     :columns="columns"
-    @edit="editar"
-    @delete="eliminar"
+    :show-edit="false"
+    :show-delete="false"
+    @detail="verDetalle"
   />
 </template>

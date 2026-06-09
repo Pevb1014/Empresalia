@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { obtenerCargo, actualizarCargo } from "@/api/cargoApi";
-import { listarAreas } from "@/api/areaApi";
+import { obtenerCargo, actualizarCargo } from "@/api/cargo.api.ts";
+import { listarAreas } from "@/api/area.api.ts";
 import { adaptCargoToForm, adaptFormToCargoPayload } from "@/adapters/cargos.adapter";
 import DynamicForm, { type FormField } from "@/components/DynamicForm.vue";
 
@@ -18,6 +18,13 @@ const errorMsg = ref("");
 const cargoFields = ref<FormField[]>([
   { key: "nombre", label: "Nombre del Cargo", type: "text", required: true },
   { key: "area", label: "Área de la Empresa", type: "select", required: true, options: [] },
+  { 
+    key: "descripcion", 
+    label: "Descripción", 
+    type: "textarea", 
+    placeholder: "Escriba las funciones o responsabilidades...",
+    required: false 
+  },
 ]);
 
 onMounted(async () => {
@@ -71,7 +78,7 @@ function handleCancel() {
 </script>
 
 <template>
-  <div class="edit-container">
+  <div class="view-container">
     <div v-if="cargando">Preparando formulario...</div>
     
     <div v-else>
@@ -93,6 +100,13 @@ function handleCancel() {
 </template>
 
 <style scoped>
-.edit-container { max-width: 600px; margin: 2rem auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-hr { margin-bottom: 1.5rem; border: 0; border-top: 1px solid #eee; }
+.view-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+.view-header { margin-bottom: 1.5rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 0.5rem; }
 </style>

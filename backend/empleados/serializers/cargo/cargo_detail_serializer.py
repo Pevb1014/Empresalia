@@ -1,7 +1,14 @@
 from rest_framework import serializers
-from empleados.models import Cargo
+from empleados.models import Cargo, Empleado
 from empleados.serializers.area.area_nested_serializer import AreaNestedSerializer
 
+class EmpleadoNestedSerializer(serializers.ModelSerializer):
+    """
+    Representación ligera de un empleado para relaciones anidadas.
+    """
+    class Meta:
+        model = Empleado
+        fields = ("id", "nombre")
 
 class CargoDetailSerializer(serializers.ModelSerializer):
     """
@@ -20,6 +27,12 @@ class CargoDetailSerializer(serializers.ModelSerializer):
     operaciones de escritura.
     """
 
+    empleados = EmpleadoNestedSerializer(many=True, read_only=True)
+    """
+    Lista de empleados que tienen asignado este cargo.
+    Aprovecha el prefetch_related del ViewSet para evitar consultas N+1.
+    """
+
     class Meta:
         model = Cargo
         fields = (
@@ -27,4 +40,5 @@ class CargoDetailSerializer(serializers.ModelSerializer):
             "nombre",
             "descripcion",
             "area",
+            "empleados",
         )

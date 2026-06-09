@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import { crearEmpleado } from "@/api/empleadoApi";
-import { listarCargos } from "@/api/cargoApi";
+import { crearEmpleado } from "@/api/empleado.api.ts";
+import { listarCargos } from "@/api/cargo.api.ts";
 import DynamicForm, { type FormField } from "@/components/DynamicForm.vue";
 import { adaptFormToEmpleadoPayload } from "@/adapters/empleados.adapter";
 
@@ -12,9 +12,14 @@ const errorMsg = ref("");
 
 const empleadoFields = ref<FormField[]>([
   { key: "nombre", label: "Nombre", type: "text", required: true },
-  { key: "apellido", label: "Apellido", type: "text", required: true },
-  { key: "email", label: "Correo Electrónico", type: "email", required: true },
-  { key: "cargo", label: "Cargo Asignado", type: "select", required: true, options: [] }
+  { key: "numero_documento", label: "Documento de Identidad", type: "text", required: true },
+  { key: "correo", label: "Correo Electrónico", type: "email", required: true },
+  { key: "fecha_ingreso", label: "Fecha de Ingreso", type: "date", required: true },
+  { key: "cargo", label: "Cargo Asignado", type: "select", required: true, options: [] },
+  { key: "estado", label: "Estado", type: "select", required: true, options: [
+    { value: "ACTIVO", label: "Activo" },
+    { value: "INACTIVO", label: "Inactivo" }
+  ]},
 ]);
 
 onMounted(async () => {
@@ -43,7 +48,8 @@ async function handleFormSubmit(formData: Record<string, any>) {
     router.push({ name: "empleados" });
   } catch (error: any) {
     console.error(error);
-    errorMsg.value = error.response?.data?.email?.[0] || "Error al guardar el empleado.";
+    const data = error.response?.data;
+    errorMsg.value = data?.error || data?.nombre?.[0] || data?.correo?.[0] || "Error al validar los datos.";
   } finally {
     cargando.value = false;
   }
@@ -51,9 +57,11 @@ async function handleFormSubmit(formData: Record<string, any>) {
 </script>
 
 <template>
-  <div class="form-container">
-    <h1>Registrar Empleado</h1>
-    <hr />
+  <div class="view-container">
+    <header class="view-header">
+      <h1>Registrar Nuevo Empleado</h1>
+    </header>
+
     <DynamicForm
       :fields="empleadoFields"
       :loading="cargando"
@@ -67,6 +75,24 @@ async function handleFormSubmit(formData: Record<string, any>) {
 </template>
 
 <style scoped>
-.form-container { max-width: 600px; margin: 2rem auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-hr { margin-bottom: 1.5rem; border: 0; border-top: 1px solid #eee; }
+.view-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.view-header {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 0.5rem;
+}
+
+.view-header h1 {
+  font-size: 1.5rem;
+  color: #1a1a1a;
+  margin: 0;
+}
 </style>
