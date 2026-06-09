@@ -1,29 +1,33 @@
-# frontend
+# Empresalia - Frontend Portal
 
-This template should help get you started developing with Vue 3 in Vite.
+Este es el portal administrativo de **Empresalia**, una interfaz moderna e intuitiva construida para la gestión de la estructura organizacional, administración de personal y consulta de auditoría.
 
-## Recommended IDE Setup
+## 🚀 Tecnologías Principales
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+- **Vue 3**: Framework progresivo (utilizando Composition API).
+- **Vite**: Herramienta de construcción ultra rápida.
+- **TypeScript**: Tipado estático para garantizar la integridad de los datos consumidos de la API.
+- **Vue Router**: Gestión de navegación entre módulos.
 
-## Recommended Browser Setup
+## 📁 Estructura de Datos (Interfaces)
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+El proyecto utiliza una arquitectura fuertemente tipada en `src/interfaces/` que espeja los modelos del backend para facilitar el mantenimiento:
+- **Áreas y Cargos**: Gestión jerárquica de la empresa.
+- **Empleados**: Ficha completa del personal con estados operativos.
+- **Historial**: Seguimiento detallado de cambios (Auditoría) con soporte para filtros avanzados.
 
-## Type Support for `.vue` Imports in TS
+## 🛠️ Configuración del Entorno
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+### Configuración Recomendada del IDE
+Use VS Code con la extensión oficial Vue - Volar (y deshabilite Vetur).
 
-## Customize configuration
+### Conexión con la API
+Cree un archivo `.env` en la raíz basado en `.env.example`:
+```env
+VITE_API_URL=http://localhost:8000/api
+```
 
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
+### Instalación de Dependencias
 
 ```sh
 npm install

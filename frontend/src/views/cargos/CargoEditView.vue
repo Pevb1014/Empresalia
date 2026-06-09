@@ -5,6 +5,7 @@ import { obtenerCargo, actualizarCargo } from "@/api/cargo.api.ts";
 import { listarAreas } from "@/api/area.api.ts";
 import { adaptCargoToForm, adaptFormToCargoPayload } from "@/adapters/cargos.adapter";
 import DynamicForm, { type FormField } from "@/components/DynamicForm.vue";
+import SuccessModal from "@/components/SuccessModal.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -13,7 +14,9 @@ const cargoId = route.params.id as string;
 const cargoFormData = ref<any>(null);
 const cargando = ref(true);
 const guardando = ref(false);
+const mostrarExito = ref(false);
 const errorMsg = ref("");
+const validationErrors = ref<Record<string, string>>({});
 
 const cargoFields = ref<FormField[]>([
   { key: "nombre", label: "Nombre del Cargo", type: "text", required: true },
@@ -57,22 +60,33 @@ onMounted(async () => {
 async function handleUpdateSubmit(formData: Record<string, any>) {
   guardando.value = true;
   errorMsg.value = "";
+  validationErrors.value = {};
 
   try {
     const payload = adaptFormToCargoPayload(formData);
     await actualizarCargo(cargoId, payload);
-    
-    // Regresamos directamente al detalle para visualizar los cambios actualizados
-    router.push({ name: "cargo-detail", params: { id: cargoId } });
+
+    mostrarExito.value = true;
   } catch (error: any) {
     console.error(error);
-    errorMsg.value = "No se pudieron guardar los cambios en el servidor.";
+    if (error.response?.data?.errors) {
+      error.response.data.errors.forEach((err: any) => {
+        validationErrors.value[err.campo] = err.mensaje;
+      });
+      errorMsg.value = "Error de validación.";
+    } else {
+      errorMsg.value = "No se pudieron guardar los cambios en el servidor.";
+    }
   } finally {
     guardando.value = false;
   }
 }
 
 function handleCancel() {
+  router.push({ name: "cargo-detail", params: { id: cargoId } });
+}
+
+function irAlDetalle() {
   router.push({ name: "cargo-detail", params: { id: cargoId } });
 }
 </script>
@@ -90,10 +104,18 @@ function handleCancel() {
         :initial-data="cargoFormData"
         :loading="guardando"
         :error-msg="errorMsg"
+        :validation-errors="validationErrors"
         :show-cancel="true"
         submit-label="Guardar Cambios"
         @submit="handleUpdateSubmit"
         @cancel="handleCancel"
+      />
+
+      <SuccessModal
+        :show="mostrarExito"
+        title="¡Cargo Actualizado!"
+        message="Los cambios en el cargo se han guardado con éxito."
+        @confirm="irAlDetalle"
       />
     </div>
   </div>
@@ -109,4 +131,11 @@ function handleCancel() {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 .view-header { margin-bottom: 1.5rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 0.5rem; }
+
+@media (max-width: 640px) {
+  .view-container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}
 </style>

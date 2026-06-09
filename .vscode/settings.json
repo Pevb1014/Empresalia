@@ -5,6 +5,16 @@
             "path": "frontend",
             "envManager": "ms-python.python:system",
             "packageManager": "ms-python.python:pip"
+        },
+        {
+            "path": "backend/empleados/validators/validators.py",
+            "envManager": "ms-python.python:system",
+            "packageManager": "ms-python.python:pip"
+        },
+        {
+            "path": "frontend/src/components",
+            "envManager": "ms-python.python:system",
+            "packageManager": "ms-python.python:pip"
         }
     ]
 }

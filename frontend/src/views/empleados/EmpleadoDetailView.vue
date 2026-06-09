@@ -5,6 +5,7 @@ import { obtenerEmpleado, actualizarEmpleado, eliminarEmpleado } from "@/api/emp
 import { listarCargos } from "@/api/cargo.api.ts";
 import { adaptEmpleadoToForm, adaptFormToEmpleadoPayload } from "@/adapters/empleados.adapter";
 import DynamicForm, { type FormField } from "@/components/DynamicForm.vue";
+import ActionModal from "@/components/ActionModal.vue";
 
 const props = defineProps<{ id: string }>();
 const router = useRouter();
@@ -15,6 +16,13 @@ const editando = ref(false);
 const cargando = ref(true);
 const procesando = ref(false);
 const errorMsg = ref("");
+
+const modal = ref({
+  show: false,
+  title: "",
+  message: "",
+  type: "confirm" as "confirm" | "info" | "error"
+});
 
 const empleadoFields = ref<FormField[]>([
   { key: "nombre", label: "Nombre", type: "text", required: true },
@@ -55,16 +63,41 @@ async function cargarDatos() {
 
 onMounted(cargarDatos);
 
-async function handleEliminar() {
-  if (!confirm(`¿Eliminar a ${empleado.value.nombre}?`)) return;
+function iniciarEliminacion() {
+  modal.value = {
+    show: true,
+    title: "Baja de Empleado",
+    message: `¿Deseas eliminar permanentemente la ficha de ${empleado.value.nombre}?`,
+    type: "confirm"
+  };
+}
+
+async function ejecutarEliminacion() {
   procesando.value = true;
   try {
     await eliminarEmpleado(props.id);
-    router.push({ name: "empleados" });
+    modal.value = {
+      show: true,
+      title: "Empleado Eliminado",
+      message: "El registro ha sido eliminado satisfactoriamente.",
+      type: "info"
+    };
   } catch (error) {
-    errorMsg.value = "Error al intentar eliminar el registro.";
+    modal.value = {
+      show: true,
+      title: "Error",
+      message: "Hubo un problema al procesar la solicitud en el servidor.",
+      type: "error"
+    };
+  } finally {
     procesando.value = false;
   }
+}
+
+function cerrarModal() {
+  const exito = modal.value.type === 'info';
+  modal.value.show = false;
+  if (exito) router.push({ name: "empleados" });
 }
 
 async function handleUpdateSubmit(formData: Record<string, any>) {
@@ -85,31 +118,39 @@ async function handleUpdateSubmit(formData: Record<string, any>) {
 </script>
 
 <template>
-  <div class="view-container">
+  <div class="view-card detail-view">
     <div v-if="cargando">Cargando...</div>
     <div v-else-if="errorMsg && !editando" class="alerta-error">{{ errorMsg }}</div>
     <div v-else>
+      <header class="view-header">
+        <h1>{{ editando ? 'Modificar Ficha' : 'Ficha del Empleado' }}</h1>
+      </header>
+
       <div v-if="!editando">
-        <header class="view-header">
-          <h1>Ficha de Empleado: {{ empleado.nombre }}</h1>
-        </header>
-        
         <div class="info-grid">
-          <p><strong>Documento:</strong> {{ empleado.numero_documento }}</p>
-          <p><strong>Correo:</strong> {{ empleado.correo }}</p>
-          <p><strong>Cargo:</strong> {{ empleado.cargo?.nombre }}</p>
-          <p><strong>Área:</strong> {{ empleado.area?.nombre }}</p>
-          <p><strong>Ingreso:</strong> {{ empleado.fecha_ingreso }}</p>
-          <p><strong>Estado:</strong> 
+          <div class="info-item full">
+            <p class="label">Nombre Completo</p>
+            <p class="value">{{ empleado.nombre }}</p>
+          </div>
+          <div class="info-item">
+            <p class="label">Correo Electrónico</p>
+            <p class="value">{{ empleado.correo }}</p>
+          </div>
+          <div class="info-item">
+            <p class="label">Cargo</p>
+            <p class="value">{{ empleado.cargo?.nombre }}</p>
+          </div>
+          <div class="info-item">
+            <p class="label">Estado Operativo</p>
             <span :class="empleado.estado === 'ACTIVO' ? 'tag-activo' : 'tag-inactivo'">
               {{ empleado.estado }}
             </span>
-          </p>
+          </div>
         </div>
 
         <div class="acciones">
           <button @click="router.push({ name: 'empleados' })" class="btn-secundario">Volver</button>
-          <button @click="handleEliminar" class="btn-peligro">Eliminar</button>
+          <button @click="iniciarEliminacion" class="btn-peligro">Eliminar</button>
           <button @click="editando = true" class="btn-primario">Editar Ficha</button>
         </div>
       </div>
@@ -130,10 +171,20 @@ async function handleUpdateSubmit(formData: Record<string, any>) {
       </div>
     </div>
   </div>
+
+  <ActionModal
+    :show="modal.show"
+    :title="modal.title"
+    :message="modal.message"
+    :type="modal.type"
+    :loading="procesando"
+    @confirm="ejecutarEliminacion"
+    @close="cerrarModal"
+  />
 </template>
 
 <style scoped>
-.view-container { max-width: 700px; margin: 2rem auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.view-card { max-width: 700px; margin: 2rem auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 .view-header { margin-bottom: 1.5rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 0.5rem; }
 .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
 .info-grid p { margin: 0; font-size: 1rem; }
@@ -144,4 +195,11 @@ async function handleUpdateSubmit(formData: Record<string, any>) {
 .btn-secundario { background: #e0e0e0; color: #333; padding: 0.6rem 1.2rem; border: none; border-radius: 4px; cursor: pointer; }
 .btn-peligro { background: #d32f2f; color: white; padding: 0.6rem 1.2rem; border: none; border-radius: 4px; cursor: pointer; }
 .alerta-error { background: #fbe9e7; color: #d32f2f; padding: 0.8rem; border-radius: 4px; margin-bottom: 1rem; }
+
+@media (max-width: 640px) {
+  .view-card { margin: 1rem; padding: 1.5rem; }
+  .info-grid { grid-template-columns: 1fr; }
+  .acciones { flex-direction: column-reverse; }
+  .acciones button { width: 100%; }
+}
 </style>

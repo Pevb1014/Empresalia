@@ -3,11 +3,24 @@ import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { listarEmpleados, eliminarEmpleado } from "@/api/empleado.api";
 import DataTable from "@/components/DataTable.vue";
+import Pagination from "@/components/Pagination.vue";
 import { type FormField } from "@/components/DynamicForm.vue";
+import ActionModal from "@/components/ActionModal.vue";
 import { adaptEmpleadoToTable } from "@/adapters/empleados.adapter";
 
 const router = useRouter();
 const empleados = ref([]);
+const totalItems = ref(0);
+const currentPage = ref(1);
+const pageSize = 10;
+const procesando = ref(false);
+const itemAEliminar = ref<any>(null);
+const modal = ref({
+  show: false,
+  title: "",
+  message: "",
+  type: "confirm" as "confirm" | "info" | "error"
+});
 
 // 1. Configuración del formulario (útil para futuras acciones de creación/edición rápida)
 const empleadoFields: FormField[] = [
@@ -31,8 +44,9 @@ const columns = [
 // Función centralizada para cargar y refrescar los datos
 async function cargarEmpleados() {
   try {
-    const res = await listarEmpleados();
+    const res = await listarEmpleados({ page: currentPage.value });
     empleados.value = res.data.results.map(adaptEmpleadoToTable);
+    totalItems.value = res.data.count;
   } catch (error) {
     console.error("Error al obtener empleados:", error);
   }
@@ -52,20 +66,38 @@ function irAEditar(item: any) {
   router.push({ name: "empleado-edit", params: { id: item.id } });
 }
 
-// Lógica de eliminación conectada al Backend
-async function eliminar(item: any) {
-  const confirmar = confirm(`¿Estás seguro de que deseas eliminar al empleado "${item.nombre}"?`);
-  
-  if (confirmar) {
-    try {
-      // Ejecuta el método DELETE en Django
-      await eliminarEmpleado(item.id);
-      // Refresca la lista
-      await cargarEmpleados();
-    } catch (error) {
-      console.error("Error al eliminar:", error);
-      alert("No se pudo eliminar el empleado.");
-    }
+function iniciarEliminacion(item: any) {
+  itemAEliminar.value = item;
+  modal.value = {
+    show: true,
+    title: "Confirmar acción",
+    message: `¿Estás seguro de que deseas eliminar al empleado "${item.nombre}"?`,
+    type: "confirm"
+  };
+}
+
+async function ejecutarEliminacion() {
+  if (!itemAEliminar.value) return;
+  procesando.value = true;
+  try {
+    await eliminarEmpleado(itemAEliminar.value.id);
+    modal.value = {
+      show: true,
+      title: "Éxito",
+      message: "Empleado eliminado correctamente.",
+      type: "info"
+    };
+    await cargarEmpleados();
+  } catch (error) {
+    modal.value = {
+      show: true,
+      title: "Error",
+      message: "No se pudo eliminar el empleado.",
+      type: "error"
+    };
+  } finally {
+    procesando.value = false;
+    itemAEliminar.value = null;
   }
 }
 </script>
@@ -85,7 +117,24 @@ async function eliminar(item: any) {
     :show-delete="true"
     @detail="verDetalle"
     @edit="irAEditar"
-    @delete="eliminar"
+    @delete="iniciarEliminacion"
+  />
+
+  <Pagination
+    :total-items="totalItems"
+    :page-size="pageSize"
+    v-model:current-page="currentPage"
+    @update:current-page="cargarEmpleados"
+  />
+
+  <ActionModal
+    :show="modal.show"
+    :title="modal.title"
+    :message="modal.message"
+    :type="modal.type"
+    :loading="procesando"
+    @confirm="ejecutarEliminacion"
+    @close="modal.show = false"
   />
 </template>
 
@@ -99,4 +148,13 @@ async function eliminar(item: any) {
 
 .btn-nuevo { background: #2e7d32; color: white; padding: 0.6rem 1.2rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
 .btn-nuevo:hover { background: #1b5e20; }
+
+@media (max-width: 640px) {
+  .view-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .btn-nuevo { width: 100%; text-align: center; }
+}
 </style>

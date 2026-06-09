@@ -27,22 +27,31 @@ onMounted(cargarDetalle);
 </script>
 
 <template>
-  <div class="view-container">
+  <div class="view-card detail-view">
     <div v-if="cargando">Cargando detalle...</div>
     <div v-else-if="errorMsg" class="alerta-error">{{ errorMsg }}</div>
     <div v-else>
       <header class="view-header">
         <h1>Evento de Auditoría</h1>
-        <p class="subtitle">ID: {{ registro.id }}</p>
       </header>
 
       <div class="info-grid">
-        <p><strong>Empleado:</strong> {{ registro.empleado }}</p>
-        <p><strong>Fecha del Cambio:</strong> {{ registro.fecha }}</p>
-        <p><strong>Tipo de Operación:</strong> 
+        <div class="info-item">
+          <p class="label">Empleado</p>
+          <p class="value">{{ registro.empleado }}</p>
+        </div>
+        <div class="info-item">
+          <p class="label">Fecha del Registro</p>
+          <p class="value">{{ registro.fecha }}</p>
+        </div>
+        <div class="info-item">
+          <p class="label">Operación</p>
           <span class="tag-operacion">{{ registro.tipo }}</span>
-        </p>
-        <p><strong>Campo Modificado:</strong> <code>{{ registro.campo }}</code></p>
+        </div>
+        <div class="info-item">
+          <p class="label">Campo Afectado</p>
+          <p class="value"><code>{{ registro.campo }}</code></p>
+        </div>
       </div>
 
       <div class="comparativa" v-if="registro.tipo === 'ACTUALIZACION'">
@@ -67,11 +76,10 @@ onMounted(cargarDetalle);
 </template>
 
 <style scoped>
-.view-container { max-width: 800px; margin: 2rem auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 .view-header { margin-bottom: 1.5rem; border-bottom: 1px solid #f0f0f0; padding-bottom: 0.5rem; }
 .subtitle { color: #666; font-size: 0.85rem; margin-top: 0.2rem; }
 .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
-.comparativa { display: flex; gap: 2rem; background: #f9f9f9; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid #eee; }
+.comparativa { display: flex; flex-wrap: wrap; gap: 2rem; background: #f9f9f9; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid #eee; }
 .valor-box { flex: 1; }
 .valor-box label { display: block; font-size: 0.8rem; text-transform: uppercase; color: #777; margin-bottom: 0.5rem; }
 .valor { padding: 1rem; border-radius: 4px; font-family: monospace; }
@@ -81,4 +89,11 @@ onMounted(cargarDetalle);
 .acciones { display: flex; justify-content: flex-end; }
 .btn-secundario { background: #e0e0e0; color: #333; padding: 0.6rem 1.2rem; border: none; border-radius: 4px; cursor: pointer; }
 .alerta-error { background: #fbe9e7; color: #d32f2f; padding: 0.8rem; border-radius: 4px; margin-bottom: 1rem; }
+
+@media (max-width: 768px) {
+  .info-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .comparativa { flex-direction: column; gap: 1rem; }
+  .acciones { justify-content: center; }
+  .btn-secundario { width: 100%; }
+}
 </style>

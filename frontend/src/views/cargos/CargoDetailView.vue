@@ -5,6 +5,7 @@ import { obtenerCargo, actualizarCargo, eliminarCargo } from "@/api/cargo.api.ts
 import { listarAreas } from "@/api/area.api.ts";
 import { adaptCargoToForm, adaptFormToCargoPayload } from "@/adapters/cargos.adapter";
 import DynamicForm, { type FormField } from "@/components/DynamicForm.vue";
+import ActionModal from "@/components/ActionModal.vue";
 
 const props = defineProps<{
   id: string;
@@ -17,6 +18,13 @@ const editando = ref(false);
 const cargando = ref(true);
 const procesando = ref(false);
 const errorMsg = ref("");
+
+const modal = ref({
+  show: false,
+  title: "",
+  message: "",
+  type: "confirm" as "confirm" | "info" | "error"
+});
 
 const cargoFields = ref<FormField[]>([
   { key: "nombre", label: "Nombre del Cargo", type: "text", required: true },
@@ -60,19 +68,42 @@ onMounted(() => {
   cargarDetalle();
 });
 
-async function handleEliminar() {
-  const confirmar = confirm(`¿Deseas eliminar definitivamente el cargo "${cargo.value.nombre}"?`);
-  if (!confirmar) return;
+function iniciarEliminacion() {
+  modal.value = {
+    show: true,
+    title: "Eliminar Cargo",
+    message: `¿Estás seguro de que deseas eliminar el cargo "${cargo.value.nombre}"?`,
+    type: "confirm"
+  };
+}
 
+async function ejecutarEliminacion() {
   procesando.value = true;
-  errorMsg.value = "";
   try {
     await eliminarCargo(props.id);
-    router.push({ name: "cargos" });
+    modal.value = {
+      show: true,
+      title: "Cargo Eliminado",
+      message: "El registro ha sido removido del sistema.",
+      type: "info"
+    };
   } catch (error) {
-    console.error(error);
-    errorMsg.value = "No se pudo eliminar el cargo. Verifica dependencias en el servidor.";
+    modal.value = {
+      show: true,
+      title: "Acción Denegada",
+      message: "No se puede eliminar el cargo porque tiene empleados activos asociados.",
+      type: "error"
+    };
+  } finally {
     procesando.value = false;
+  }
+}
+
+function cerrarModal() {
+  const exito = modal.value.type === 'info';
+  modal.value.show = false;
+  if (exito) {
+    router.push({ name: "cargos" });
   }
 }
 
@@ -120,7 +151,7 @@ async function handleUpdateSubmit(formData: Record<string, any>) {
             Volver al listado
           </button>
           
-          <button @click="handleEliminar" :disabled="procesando" class="btn-peligro">
+          <button @click="iniciarEliminacion" :disabled="procesando" class="btn-peligro">
             {{ procesando ? "Eliminando..." : "Eliminar Cargo" }}
           </button>
           
@@ -146,6 +177,16 @@ async function handleUpdateSubmit(formData: Record<string, any>) {
       </div>
     </div>
   </div>
+
+  <ActionModal
+    :show="modal.show"
+    :title="modal.title"
+    :message="modal.message"
+    :type="modal.type"
+    :loading="procesando"
+    @confirm="ejecutarEliminacion"
+    @close="cerrarModal"
+  />
 </template>
 
 <style scoped>
@@ -158,4 +199,10 @@ hr { margin: 1rem 0 1.5rem 0; border: 0; border-top: 1px solid #eee; }
 .btn-peligro { background: #d32f2f; color: white; padding: 0.6rem 1.2rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
 .alerta-error { background: #fbe9e7; color: #d32f2f; padding: 0.8rem; border-radius: 4px; }
 button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  .detail-container { margin: 1rem; padding: 1.5rem; }
+  .acciones { flex-direction: column; }
+  .btn-primario, .btn-secundario, .btn-peligro { width: 100%; text-align: center; }
+}
 </style>

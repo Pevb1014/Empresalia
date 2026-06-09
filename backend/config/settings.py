@@ -136,6 +136,8 @@ REST_FRAMEWORK = {
 
     "DEFAULT_PAGINATION_CLASS":
         "empleados.pagination.custom_pagination.StandardResultsSetPagination",
+
+    'EXCEPTION_HANDLER': 'empleados.utils.exceptions.custom_exception_handler',
 }
 
 # core/settings.py

@@ -3,11 +3,14 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { crearArea } from "@/api/area.api";
 import DynamicForm, { type FormField } from "@/components/DynamicForm.vue";
+import SuccessModal from "@/components/SuccessModal.vue";
 import { adaptFormToAreaPayload } from "@/adapters/areas.adapter";
 
 const router = useRouter();
 const cargando = ref(false);
+const mostrarExito = ref(false);
 const errorMsg = ref("");
+const validationErrors = ref<Record<string, string>>({});
 
 // 1. Configuración de los campos que el formulario dinámico renderizará
 const areaFields: FormField[] = [
@@ -30,6 +33,7 @@ const areaFields: FormField[] = [
 async function handleFormSubmit(formData: Record<string, any>) {
   cargando.value = true;
   errorMsg.value = "";
+  validationErrors.value = {};
 
   try {
     // Pasamos los datos recolectados por el adaptador antes de tocar la API
@@ -38,15 +42,19 @@ async function handleFormSubmit(formData: Record<string, any>) {
     // Ejecutamos la petición POST a tu servidor Django
     await crearArea(payload);
 
-    // Redirección al listado principal tras guardar exitosamente
-    router.push({ name: "areas" }); 
+    mostrarExito.value = true;
   } catch (error: any) {
     console.error("Error al crear el área:", error);
-    
-    // Captura y mapeo de errores desde Django REST Framework
-    if (error.response && error.response.data) {
+
+    if (error.response?.data?.errors) {
+      // Mapeo del nuevo formato: { status: "error", errors: [{ campo, mensaje }] }
+      error.response.data.errors.forEach((err: any) => {
+        validationErrors.value[err.campo] = err.mensaje;
+      });
+      errorMsg.value = "Por favor, revise los campos marcados.";
+    } else if (error.response?.data) {
       const data = error.response.data;
-      errorMsg.value = data.error || data.nombre?.[0] || "Ocurrió un error al validar los datos en el servidor.";
+      errorMsg.value = data.error || "Ocurrió un error al validar los datos.";
     } else {
       errorMsg.value = "No se pudo establecer conexión con el servidor.";
     }
@@ -57,6 +65,10 @@ async function handleFormSubmit(formData: Record<string, any>) {
 
 // 3. Cancelación del flujo
 function handleCancel() {
+  router.push({ name: "areas" });
+}
+
+function irAlListado() {
   router.push({ name: "areas" });
 }
 </script>
@@ -71,22 +83,38 @@ function handleCancel() {
       :fields="areaFields"
       :loading="cargando"
       :error-msg="errorMsg"
+      :validation-errors="validationErrors"
       :show-cancel="true"
       submit-label="Guardar Área"
       @submit="handleFormSubmit"
       @cancel="handleCancel"
+    />
+
+    <SuccessModal
+      :show="mostrarExito"
+      title="¡Área Guardada!"
+      message="La nueva área ha sido registrada exitosamente en la organización."
+      @confirm="irAlListado"
     />
   </div>
 </template>
 
 <style scoped>
 .view-container {
+  width: 95%;
   max-width: 600px;
-  margin: 2rem auto;
-  padding: 2rem;
+  margin: 1rem auto;
+  padding: 1.5rem;
   background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 768px) {
+  .view-container {
+    margin: 2rem auto;
+    padding: 2rem;
+  }
 }
 
 .view-header {

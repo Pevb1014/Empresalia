@@ -4,11 +4,14 @@ import { useRouter } from "vue-router";
 import { crearCargo } from "@/api/cargo.api.ts";
 import { listarAreas } from "@/api/area.api.ts";
 import DynamicForm, { type FormField } from "@/components/DynamicForm.vue";
+import SuccessModal from "@/components/SuccessModal.vue";
 import { adaptFormToCargoPayload } from "@/adapters/cargos.adapter";
 
 const router = useRouter();
 const cargando = ref(false);
+const mostrarExito = ref(false);
 const errorMsg = ref("");
+const validationErrors = ref<Record<string, string>>({});
 
 const cargoFields = ref<FormField[]>([
   {
@@ -54,22 +57,32 @@ onMounted(async () => {
 async function handleFormSubmit(formData: Record<string, any>) {
   cargando.value = true;
   errorMsg.value = "";
+  validationErrors.value = {};
 
   try {
     const payload = adaptFormToCargoPayload(formData);
     await crearCargo(payload);
-    router.push({ name: "cargos" });
+    mostrarExito.value = true;
   } catch (error: any) {
-    console.error(error);
-    if (error.response?.data) {
+    console.error("Error al crear el cargo:", error);
+    if (error.response?.data?.errors) {
+      error.response.data.errors.forEach((err: any) => {
+        validationErrors.value[err.campo] = err.mensaje;
+      });
+      errorMsg.value = "Error de validación en el formulario.";
+    } else if (error.response?.data) {
       const data = error.response.data;
-      errorMsg.value = data.error || data.nombre?.[0] || "Ocurrió un error al validar los datos en el servidor.";
+      errorMsg.value = data.error || "Error al procesar la solicitud.";
     } else {
       errorMsg.value = "Error de comunicación con el servidor.";
     }
   } finally {
     cargando.value = false;
   }
+}
+
+function irAlListado() {
+  router.push({ name: "cargos" });
 }
 </script>
 
@@ -83,10 +96,18 @@ async function handleFormSubmit(formData: Record<string, any>) {
       :fields="cargoFields"
       :loading="cargando"
       :error-msg="errorMsg"
+      :validation-errors="validationErrors"
       :show-cancel="true"
       submit-label="Guardar Cargo"
       @submit="handleFormSubmit"
       @cancel="router.push({ name: 'cargos' })"
+    />
+
+    <SuccessModal
+      :show="mostrarExito"
+      title="¡Cargo Creado!"
+      message="El nuevo cargo ha sido registrado exitosamente en la organización."
+      @confirm="irAlListado"
     />
   </div>
 </template>
@@ -111,5 +132,12 @@ async function handleFormSubmit(formData: Record<string, any>) {
   font-size: 1.5rem;
   color: #1a1a1a;
   margin: 0;
+}
+
+@media (max-width: 640px) {
+  .view-container {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
 }
 </style>

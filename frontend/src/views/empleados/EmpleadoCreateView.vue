@@ -4,11 +4,14 @@ import { useRouter } from "vue-router";
 import { crearEmpleado } from "@/api/empleado.api.ts";
 import { listarCargos } from "@/api/cargo.api.ts";
 import DynamicForm, { type FormField } from "@/components/DynamicForm.vue";
+import SuccessModal from "@/components/SuccessModal.vue";
 import { adaptFormToEmpleadoPayload } from "@/adapters/empleados.adapter";
 
 const router = useRouter();
 const cargando = ref(false);
+const mostrarExito = ref(false);
 const errorMsg = ref("");
+const validationErrors = ref<Record<string, string>>({});
 
 const empleadoFields = ref<FormField[]>([
   { key: "nombre", label: "Nombre", type: "text", required: true },
@@ -41,18 +44,30 @@ onMounted(async () => {
 async function handleFormSubmit(formData: Record<string, any>) {
   cargando.value = true;
   errorMsg.value = "";
+  validationErrors.value = {};
 
   try {
     const payload = adaptFormToEmpleadoPayload(formData);
     await crearEmpleado(payload);
-    router.push({ name: "empleados" });
+    mostrarExito.value = true;
   } catch (error: any) {
-    console.error(error);
-    const data = error.response?.data;
-    errorMsg.value = data?.error || data?.nombre?.[0] || data?.correo?.[0] || "Error al validar los datos.";
+    console.error("Error al registrar empleado:", error);
+    if (error.response?.data?.errors) {
+      error.response.data.errors.forEach((err: any) => {
+        validationErrors.value[err.campo] = err.mensaje;
+      });
+      errorMsg.value = "Existen errores en los datos del empleado.";
+    } else {
+      const data = error.response?.data;
+      errorMsg.value = data?.error || "Error al validar los datos.";
+    }
   } finally {
     cargando.value = false;
   }
+}
+
+function irAlListado() {
+  router.push({ name: "empleados" });
 }
 </script>
 
@@ -66,10 +81,18 @@ async function handleFormSubmit(formData: Record<string, any>) {
       :fields="empleadoFields"
       :loading="cargando"
       :error-msg="errorMsg"
+      :validation-errors="validationErrors"
       :show-cancel="true"
       submit-label="Registrar"
       @submit="handleFormSubmit"
       @cancel="router.push({ name: 'empleados' })"
+    />
+
+    <SuccessModal
+      :show="mostrarExito"
+      title="¡Empleado Registrado!"
+      message="La ficha del nuevo empleado ha sido creada exitosamente."
+      @confirm="irAlListado"
     />
   </div>
 </template>
@@ -94,5 +117,13 @@ async function handleFormSubmit(formData: Record<string, any>) {
   font-size: 1.5rem;
   color: #1a1a1a;
   margin: 0;
+}
+
+@media (max-width: 640px) {
+  .view-container {
+    margin: 1rem;
+    padding: 1.5rem;
+    max-width: none;
+  }
 }
 </style>

@@ -16,6 +16,7 @@ const props = defineProps<{
   initialData?: Record<string, any>;
   loading?: boolean;
   errorMsg?: string;
+  validationErrors?: Record<string, string>;
   showCancel?: boolean;
   submitLabel?: string;
 }>();
@@ -62,6 +63,7 @@ function handleSubmit() {
         v-model="formData[field.key]"
         :placeholder="field.placeholder"
         :required="field.required"
+        :class="{ 'input-invalid': validationErrors?.[field.key] }"
         :disabled="loading"
       ></textarea>
 
@@ -70,6 +72,7 @@ function handleSubmit() {
         :id="field.key"
         v-model="formData[field.key]"
         :required="field.required"
+        :class="{ 'input-invalid': validationErrors?.[field.key] }"
         :disabled="loading"
       >
         <option value="" disabled>{{ field.placeholder || 'Seleccione una opción' }}</option>
@@ -88,9 +91,14 @@ function handleSubmit() {
         v-model="formData[field.key]"
         :type="field.type"
         :placeholder="field.placeholder"
+        :class="{ 'input-invalid': validationErrors?.[field.key] }"
         :required="field.required"
         :disabled="loading"
       />
+
+      <span v-if="validationErrors?.[field.key]" class="field-error">
+        {{ validationErrors[field.key] }}
+      </span>
     </div>
 
     <div class="form-actions">
@@ -123,10 +131,22 @@ function handleSubmit() {
 .dynamic-form { display: flex; flex-direction: column; gap: 1.2rem; }
 .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
 label { font-weight: 600; font-size: 0.95rem; }
-input, textarea, select { padding: 0.6rem; border: 1px solid #ccc; border-radius: 4px; font-size: 1rem; }
-.form-error { background: #fbe9e7; color: #d32f2f; padding: 0.8rem; border-radius: 4px; border-left: 4px solid #d32f2f; }
+input, textarea, select { padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; transition: border-color 0.2s; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); }
+.form-error { background: #fee2e2; color: var(--danger); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--danger); font-weight: 500; }
 .form-actions { display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 1rem; }
-.btn-submit { background: #1976d2; color: white; padding: 0.6rem 1.2rem; border: none; border-radius: 4px; cursor: pointer; }
-.btn-cancel { background: #e0e0e0; color: #333; padding: 0.6rem 1.2rem; border: none; border-radius: 4px; cursor: pointer; }
+.btn-submit { background: var(--primary); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+.btn-submit:hover { background: var(--primary-dark); }
+.input-invalid { border-color: var(--danger) !important; background-color: #fef2f2; }
+.field-error { color: var(--danger); font-size: 0.85rem; font-weight: 500; margin-top: 0.2rem; }
+.btn-cancel { background: var(--secondary); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
+.btn-cancel:hover { opacity: 0.9; }
 button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  .dynamic-form { gap: 1rem; }
+  .form-actions { flex-direction: column-reverse; }
+  .btn-submit, .btn-cancel { width: 100%; text-align: center; }
+  input, textarea, select { font-size: 16px; } /* Evita zoom automático en móviles */
+}
 </style>

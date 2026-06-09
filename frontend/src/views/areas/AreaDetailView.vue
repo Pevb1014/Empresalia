@@ -5,6 +5,7 @@ import { useRouter } from "vue-router";
 import { obtenerArea, actualizarArea, eliminarArea } from "@/api/area.api";
 import { adaptAreaToForm, adaptFormToAreaPayload } from "@/adapters/areas.adapter";
 import DynamicForm, { type FormField } from "@/components/DynamicForm.vue";
+import ActionModal from "@/components/ActionModal.vue";
 
 const props = defineProps<{
   id: string;
@@ -18,6 +19,14 @@ const editando = ref(false);
 const cargando = ref(true);
 const procesando = ref(false); // Reutilizado para guardar o eliminar
 const errorMsg = ref("");
+
+// Control del Modal de Acción
+const modal = ref({
+  show: false,
+  title: "",
+  message: "",
+  type: "confirm" as "confirm" | "info" | "error"
+});
 
 const areaFields: FormField[] = [
   { key: "nombre", label: "Nombre del Área", type: "text", required: true },
@@ -65,23 +74,45 @@ async function handleUpdateSubmit(formData: Record<string, any>) {
   }
 }
 
-// 🔹 Nueva función para manejar la eliminación desde el detalle
-async function handleEliminar() {
-  const confirmar = confirm(`¿Estás seguro de que deseas eliminar definitivamente el área "${areaRaw.value.nombre}"?`);
-  
-  if (!confirmar) return;
+/** Inicia el flujo de eliminación mostrando el modal */
+function iniciarEliminacion() {
+  modal.value = {
+    show: true,
+    title: "Confirmar eliminación",
+    message: `¿Estás seguro de que deseas eliminar definitivamente el área "${areaRaw.value.nombre}"? Esta acción no se puede deshacer.`,
+    type: "confirm"
+  };
+}
 
+/** Ejecuta la eliminación real tras confirmar */
+async function ejecutarEliminacion() {
   procesando.value = true;
-  errorMsg.value = "";
-
   try {
     await eliminarArea(props.id);
-    // Redirección al listado tras borrar con éxito
-    router.push({ name: "areas" });
+    modal.value = {
+      show: true,
+      title: "Área Eliminada",
+      message: `El área "${areaRaw.value.nombre}" ha sido borrada con éxito.`,
+      type: "info"
+    };
   } catch (error) {
-    console.error("Error al eliminar el área:", error);
-    errorMsg.value = "No se pudo eliminar el área. Asegúrate de que no tenga cargos asociados en Django.";
+    modal.value = {
+      show: true,
+      title: "No se pudo eliminar",
+      message: "Existen cargos o empleados vinculados a esta área. Debes remover esas dependencias antes de borrarla.",
+      type: "error"
+    };
+  } finally {
     procesando.value = false;
+  }
+}
+
+/** Cierra el modal y, si fue éxito, redirige */
+function cerrarModal() {
+  const fueExito = modal.value.type === 'info';
+  modal.value.show = false;
+  if (fueExito) {
+    router.push({ name: "areas" });
   }
 }
 </script>
@@ -108,7 +139,7 @@ async function handleEliminar() {
             Volver al listado
           </button>
           
-          <button @click="handleEliminar" :disabled="procesando" class="btn-peligro">
+          <button @click="iniciarEliminacion" :disabled="procesando" class="btn-peligro">
             {{ procesando ? "Eliminando..." : "Eliminar Área" }}
           </button>
           
@@ -134,13 +165,38 @@ async function handleEliminar() {
       </div>
     </div>
   </div>
+
+  <!-- Modal Único de Acción -->
+  <ActionModal
+    :show="modal.show"
+    :title="modal.title"
+    :message="modal.message"
+    :type="modal.type"
+    :loading="procesando"
+    @confirm="ejecutarEliminacion"
+    @close="cerrarModal"
+  />
 </template>
 
 <style scoped>
-.detail-container { max-width: 600px; margin: 2rem auto; padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.detail-container { 
+  width: 95%;
+  max-width: 600px; 
+  margin: 1rem auto; 
+  padding: 1.5rem; 
+  background: #fff; 
+  border-radius: 8px; 
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
+}
 hr { margin: 1rem 0 1.5rem 0; border: 0; border-top: 1px solid #eee; }
 .info-group p { margin-bottom: 1rem; font-size: 1.1rem; }
-.acciones { display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem; }
+.acciones { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+
+@media (min-width: 768px) {
+  .detail-container { margin: 2rem auto; padding: 2rem; }
+  .acciones { flex-direction: row; justify-content: flex-end; }
+}
+
 .btn-primario { background: #1976d2; color: white; padding: 0.6rem 1.2rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
 .btn-secundario { background: #e0e0e0; color: #333; padding: 0.6rem 1.2rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
 /* Estilo para el botón de eliminar */
